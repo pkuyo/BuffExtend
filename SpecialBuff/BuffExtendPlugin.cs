@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Permissions;
@@ -51,6 +52,12 @@ namespace BuffExtend
         public static bool IsUseless(string str)
         {
             return useLess.Contains(str);
+        }
+
+        public static bool OnlyEnglish(string str)
+        {
+            return str.ToLower().All(i =>
+                i is >= 'a' and <= 'z' || i is >= '0' and <= '9' || i == '.' || i == ',');
         }
 
         private static HashSet<string> useLess = new ()
@@ -130,9 +137,11 @@ namespace BuffExtend
                         FaceName = "Futile_White",
                         Color = Color.black
                     };
-                    staticData.CardInfos.Add(Custom.rainWorld.inGameTranslator.currentLanguage, new()
+                    var name = ForceUnlockedAndLoad(ExpeditionProgression.BurdenName, item);
+                    staticData.CardInfos.Add(OnlyEnglish(name) ? InGameTranslator.LanguageID.English : 
+                        Custom.rainWorld.inGameTranslator.currentLanguage, new()
                     {
-                        BuffName = ForceUnlockedAndLoad(ExpeditionProgression.BurdenName, item),
+                        BuffName = name,
                         Description = ForceUnlockedAndLoad(ExpeditionProgression.BurdenManualDescription, item),
                     });
                     BuffRegister.RegisterBuff(staticData.BuffID, ass.GetType($"BuffExtend.{item}Buff", true),
