@@ -85,6 +85,7 @@ namespace BuffExtend
 
         private static void BuffPoolManager_ctor(On.RandomBuff.Core.Game.BuffPoolManager.orig_ctor orig, BuffPoolManager self, object game)
         {
+            activeUnlocks.Clear();
             orig(self, game);
             if (activeUnlocks.Any())
             {
@@ -108,7 +109,9 @@ namespace BuffExtend
                 return activeUnlocks;
             return orig();
         }
-       public static List<string> activeUnlocks = new();
+
+
+        public static List<string> activeUnlocks = new();
 
     }
 }

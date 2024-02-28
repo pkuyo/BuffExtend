@@ -27,5 +27,11 @@ namespace BuffExtend
             else
                 BuffUtils.Log("BuffExtend", $"already contains BuffID {data.BuffID}");
         }
+
+        public static void AddUnique(List<string> self, string item)
+        {
+            if (!self.Contains(item))
+                self.Add(item);
+        }
     }
 }

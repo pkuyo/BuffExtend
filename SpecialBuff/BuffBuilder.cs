@@ -19,21 +19,44 @@ using MonoOpCodes = Mono.Cecil.Cil.OpCodes;
 using PropertyAttributes = Mono.Cecil.PropertyAttributes;
 using TypeAttributes = Mono.Cecil.TypeAttributes;
 using System.Runtime.InteropServices;
+using System.Security.Permissions;
+using CustomAttributeNamedArgument = Mono.Cecil.CustomAttributeNamedArgument;
+using SecurityAction = System.Security.Permissions.SecurityAction;
 
 
 namespace BuffExtend
 {
     public static class BuffBuilder
     {
+
         public static (TypeDefinition buffType, TypeDefinition dataType) GenerateBuffType(string modId,string usedId,
             Action<ILProcessor> buffCtor = null,
             Action<ILProcessor> dataCtor = null)
         {
-            if(!assemblyDefs.ContainsKey(modId))
-                assemblyDefs.Add(modId,AssemblyDefinition.CreateAssembly(new AssemblyNameDefinition($"DynamicBuff_{modId}", new Version(1,0)),
+            if (!assemblyDefs.ContainsKey(modId))
+            {
+
+
+
+                assemblyDefs.Add(modId, AssemblyDefinition.CreateAssembly(
+                    new AssemblyNameDefinition($"DynamicBuff_{modId}", new Version(1, 0)),
                     $"Main", ModuleKind.Dll));
-          
-            
+                var attrType = typeof(SecurityPermissionAttribute);
+             
+                var ctor = attrType.GetConstructor(new[] {typeof(SecurityAction)});
+                var attr = new CustomAttribute(assemblyDefs[modId].MainModule.ImportReference(ctor));
+
+#pragma warning disable CS0618
+                var attrArg = new CustomAttributeArgument(
+                    assemblyDefs[modId].MainModule.ImportReference(typeof(SecurityAction)), SecurityAction.RequestMinimum);
+#pragma warning restore CS0618
+                attr.ConstructorArguments.Add(attrArg);
+                attr.Properties.Add(new CustomAttributeNamedArgument("SkipVerification",
+                    new CustomAttributeArgument(assemblyDefs[modId].MainModule.TypeSystem.Boolean,true)));
+                assemblyDefs[modId].CustomAttributes.Add(attr);
+            }
+
+
             var moduleDef = assemblyDefs[modId].MainModule;
 
             var buffType = new TypeDefinition(modId, $"{usedId}Buff", TypeAttributes.Public | TypeAttributes.Class,
@@ -146,14 +169,15 @@ namespace BuffExtend
             return property;
         }
 
-        public static Assembly FinishGenerate(string modId)
+        public static Assembly FinishGenerate(string modId,string debugOutputPath = null)
         {
             using (MemoryStream ms = new MemoryStream())
             {
                 if (assemblyDefs.ContainsKey(modId))
                 {
                     assemblyDefs[modId].Write(ms);
-                    //assemblyDefs[modId].Write("a.dll");
+                    if(debugOutputPath != null)
+                        assemblyDefs[modId].Write(debugOutputPath);
                 }
 
                 return Assembly.Load(ms.GetBuffer());

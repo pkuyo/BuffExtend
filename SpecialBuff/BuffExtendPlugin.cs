@@ -102,7 +102,7 @@ namespace BuffExtend
 
         private static void RegisterExpeditionType()
         {
-            var ass = BuffBuilder.FinishGenerate("BuffExtend");
+            var ass = BuffBuilder.FinishGenerate("BuffExtend","buffExtend.dll");
             foreach (var group in ExpeditionProgression.perkGroups)
             {
                 foreach (var item in group.Value)
@@ -175,7 +175,7 @@ namespace BuffExtend
         {
             il.Emit(OpCodes.Ldsfld, typeof(ExpeditionHooks).GetField(nameof(ExpeditionHooks.activeUnlocks), BindingFlags.Static | BindingFlags.Public));
             il.Emit(OpCodes.Ldstr, item);
-            il.Emit(OpCodes.Callvirt, typeof(List<string>).GetMethod(nameof(List<string>.Add), new[] { typeof(string) }));
+            il.Emit(OpCodes.Callvirt, typeof(BuffExtend).GetMethod(nameof(BuffExtend.AddUnique), new[] { typeof(List<string>), typeof(string) }));
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Call, typeof(RuntimeBuff).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).First());
             il.Emit(OpCodes.Ret);
