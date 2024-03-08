@@ -28,19 +28,23 @@ namespace BuffExtend
             On.RainWorld.PostModsInit += RainWorld_PostModsInit;
         }
 
-
+        private static bool isLoaded = false;
 
         private void RainWorld_PostModsInit(On.RainWorld.orig_PostModsInit orig, RainWorld self)
         {
             orig(self);
             try
             {
-                ExpeditionProgression.SetupPerkGroups();
-                ExpeditionProgression.SetupBurdenGroups();
+                if (!isLoaded)
+                {
+                    ExpeditionProgression.SetupPerkGroups();
+                    ExpeditionProgression.SetupBurdenGroups();
 
-                InitExpeditionType();
-                RegisterExpeditionType();
-                ExpeditionHooks.OnModsInit();
+                    InitExpeditionType();
+                    RegisterExpeditionType();
+                    ExpeditionHooks.OnModsInit();
+                    isLoaded = true;
+                }
             }
             catch (Exception e)
             {
@@ -79,7 +83,7 @@ namespace BuffExtend
                 {
                     if(IsUseless(item)) continue;
                     var re = BuffBuilder.GenerateBuffType("BuffExtend", item,
-                        (il) => BuildILBuffCtor(il, item));
+                        true,(il) => BuildILBuffCtor(il, item));
                     re.buffType.DefineMethodOverride("Destroy", typeof(void), Type.EmptyTypes,
                         MethodAttributes.Public, (il) => BuildILDestroy(il, item));
                     //BuffUtils.Log("BuffExtend", $"Build expedition buff {group.Key}:{item}");
@@ -92,7 +96,7 @@ namespace BuffExtend
                 {
                     if (IsUseless(item)) continue;
                     var re = BuffBuilder.GenerateBuffType("BuffExtend", item,
-                        (il) => BuildILBuffCtor(il, item));
+                   true, (il) => BuildILBuffCtor(il, item));
                     re.buffType.DefineMethodOverride("Destroy", typeof(void), Type.EmptyTypes,
                         MethodAttributes.Public, (il) => BuildILDestroy(il, item));
                     //BuffUtils.Log("BuffExtend", $"Build expedition buff {group.Key}:{item}");
@@ -120,7 +124,7 @@ namespace BuffExtend
                         BuffName = ForceUnlockedAndLoad(ExpeditionProgression.UnlockName,item),
                         Description = ForceUnlockedAndLoad(ExpeditionProgression.UnlockDescription, item),
                     });
-                    BuffRegister.RegisterBuff(staticData.BuffID,ass.GetType($"BuffExtend.{item}Buff",true),
+                    BuffRegister.InternalRegisterBuff(staticData.BuffID,ass.GetType($"BuffExtend.{item}Buff",true),
                         ass.GetType($"BuffExtend.{item}BuffData"));
                     BuffExtend.RegisterStaticData(staticData);
                 }
@@ -144,7 +148,7 @@ namespace BuffExtend
                         BuffName = name,
                         Description = ForceUnlockedAndLoad(ExpeditionProgression.BurdenManualDescription, item),
                     });
-                    BuffRegister.RegisterBuff(staticData.BuffID, ass.GetType($"BuffExtend.{item}Buff", true),
+                    BuffRegister.InternalRegisterBuff(staticData.BuffID, ass.GetType($"BuffExtend.{item}Buff", true),
                         ass.GetType($"BuffExtend.{item}BuffData"));
                     BuffExtend.RegisterStaticData(staticData);
                 }
