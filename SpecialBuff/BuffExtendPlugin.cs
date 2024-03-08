@@ -106,7 +106,7 @@ namespace BuffExtend
 
         private static void RegisterExpeditionType()
         {
-            var ass = BuffBuilder.FinishGenerate("BuffExtend","buffExtend.dll");
+            var ass = BuffBuilder.FinishGenerate("BuffExtend");
             foreach (var group in ExpeditionProgression.perkGroups)
             {
                 foreach (var item in group.Value)
